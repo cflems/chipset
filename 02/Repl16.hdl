@@ -1,0 +1,23 @@
+CHIP Repl16 {
+  IN in;
+  OUT out[16];
+
+  PARTS:
+  Not(in=in, out=nin);
+  Not(in=nin, out=out[0]);
+  Not(in=nin, out=out[1]);
+  Not(in=nin, out=out[2]);
+  Not(in=nin, out=out[3]);
+  Not(in=nin, out=out[4]);
+  Not(in=nin, out=out[5]);
+  Not(in=nin, out=out[6]);
+  Not(in=nin, out=out[7]);
+  Not(in=nin, out=out[8]);
+  Not(in=nin, out=out[9]);
+  Not(in=nin, out=out[10]);
+  Not(in=nin, out=out[11]);
+  Not(in=nin, out=out[12]);
+  Not(in=nin, out=out[13]);
+  Not(in=nin, out=out[14]);
+  Not(in=nin, out=out[15]);
+}

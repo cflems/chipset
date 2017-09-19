@@ -1,0 +1,83 @@
+NAND(a, b):
+0 0 => 1
+1 0 => 1
+0 1 => 1
+1 1 => 0
+
+NOT(a) = NAND(a, 1)
+
+
+AND(a, b):
+0 0 => 0
+1 0 => 0
+0 1 => 0
+1 1 => 1
+= NOT(NAND(a, b)) = NAND(NAND(a, b), 1)
+
+OR(a, b):
+0 0 => 0
+1 0 => 1
+0 1 => 1
+1 1 => 1
+= NAND(NOT(a), NOT(b)) = NAND(NAND(a, 1), NAND(b, 1))
+
+XOR(a, b):
+0 0 => 0
+1 0 => 1
+0 1 => 1
+1 1 => 0
+= AND(NAND(a, b), OR(a, b))
+
+MUX(a, b, sel):
+0 0 0 => 0
+0 0 1 => 0
+0 1 0 => 0
+0 1 1 => 1
+1 0 0 => 1
+1 0 1 => 0
+1 1 0 => 1
+1 1 1 => 1
+= OR(SEL1(a, sel), SEL2(b, sel)) 
+= OR(AND(a, NOT(sel)), AND(b, sel))
+
+SEL1(a, sel):
+0 0 => 0
+0 1 => 0
+1 0 => 1
+1 1 => 0
+= AND(a, NOT(sel))
+
+SEL2(b, sel):
+0 0 => 0
+0 1 => 0
+1 0 => 0
+1 1 => 1
+= AND(b, sel)
+
+DMUX(in, sel):
+0 0 => 0 0
+1 0 => 1 0
+0 1 => 0 0
+1 1 => 0 1
+= {DMUXA(in, sel), DMUXB(in, sel)}
+
+DMUXA(in, sel):
+0 0 => 0
+1 0 => 1
+0 1 => 0
+1 1 => 0
+= AND(in, NOT(sel))
+
+DMUXB(in, sel):
+0 0 => 0
+1 0 => 0
+0 1 => 0
+1 1 => 1
+= AND(in, sel)
+
+MUX4WAY(sel[2], a, b, c, d):
+sel{0 0} => a
+sel{0 1} => b
+sel{1 0} => c
+sel{1 1} => d
+

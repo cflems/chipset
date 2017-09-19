@@ -1,0 +1,5 @@
+# Vim Swap Files
+*.swp
+
+# Nand2tetris testing output
+*.out

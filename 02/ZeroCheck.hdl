@@ -1,0 +1,10 @@
+CHIP ZeroCheck {
+  IN in[16];
+  OUT out;
+
+  PARTS:
+  Or8Way(in=in[0..7], out=bracket1);
+  Or8Way(in=in[8..15], out=bracket2);
+  Or(a=bracket1, b=bracket2, out=nout);
+  Not(in=nout, out=out);
+}

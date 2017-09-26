@@ -16,5 +16,9 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    Inc16(in=loopback, out=lopp);
+    Mux16(a=loopback, b=lopp, sel=inc, out=stage2);
+    Mux16(a=stage2, b=in, sel=load, out=stage3);
+    Mux16(a=stage3, b=false, sel=reset, out=final);
+    DFF16(in=final, out=loopback, out=out);
 }

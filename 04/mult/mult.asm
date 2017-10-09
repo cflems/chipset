@@ -1,9 +1,45 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/04/Mult.asm
+// reset @2
+@2
+M=0
 
-// Multiplies R0 and R1 and stores the result in R2.
-// (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
+// copy @0 and @1
+@0
+D=M
+@i
+M=D
+@1
+D=M
+@j
+M=D
 
-// Put your code here.
+
+// Swap i and j if i < j
+@i
+D=M
+@j
+D=D-M
+@25
+D;JGE
+@j
+D=M
+@i
+D=D+M
+@j
+M=D-M
+D=D-M
+@i
+M=D
+
+// i holds the big one
+@j
+D=M
+@36 // the end
+D;JLE
+@i
+D=M
+@2
+M=M+D
+@j
+M=M-1
+@25 // the comment
+0;JMP

@@ -41,24 +41,7 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // TODO: AND every c-bit with instruction[15]... we don't want to do anything if we have a literal (A register needs special consideration)
 
-    // Jumps & PC register
-    // nextpc is the default
-    Inc16(in=pcloopback, out=nextpc);
-    And(a=aluwasneg, b=instruction[2], out=jlt);
-    And(a=aluwaszero, b=instruction[1], out=jeq);
-    Or(a=aluwasneg, b=aluwaszero, out=alunonpos);
-    Not(in=alunonpos, out=aluwaspos);
-    And(a=aluwaspos, b=instruction[0], out=jgt);
-    Or(a=jlt, b=jeq, out=jle);
-    Or(a=jle, b=jgt, out=jmp);
-    And(a=jmp, b=instruction[15], out=cjmp);
-    Mux16(a=nextpc, b=arego, sel=cjmp, out=pcjmped);
-    
-    Mux16(a=pcjmped, b=false, sel=reset, out=pcregin);
-    PC(in=pcregin, load=true, out=pcloopback, out[0..14]=pc);
-    
     // ALU
     Mux16(a=arego, b=inM, sel=instruction[12], out=aormo);
     ALU(x=drego, y=aormo, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluout, out=outM, ng=aluwasneg, zr=aluwaszero); 
@@ -73,5 +56,24 @@ CHIP CPU {
     And(a=instruction[4], b=instruction[15], out=destbit2);
     DRegister(in=aluout, load=destbit2, out=drego);
 
+    // dest3 control bit
     And(a=instruction[3], b=instruction[15], out=writeM);
+
+    // Jumps
+    // nextpc is the default
+    Inc16(in=pcloopback, out=nextpc);
+    And(a=aluwasneg, b=instruction[2], out=jlt);
+    And(a=aluwaszero, b=instruction[1], out=jeq);
+    Or(a=aluwasneg, b=aluwaszero, out=alunonpos);
+    Not(in=alunonpos, out=aluwaspos);
+    And(a=aluwaspos, b=instruction[0], out=jgt);
+    Or(a=jlt, b=jeq, out=jle);
+    Or(a=jle, b=jgt, out=jmp);
+    And(a=jmp, b=instruction[15], out=cjmp);
+    Mux16(a=nextpc, b=arego, sel=cjmp, out=pcjmped);
+
+    // PC Register
+    Mux16(a=pcjmped, b=false, sel=reset, out=pcregin);
+    PC(in=pcregin, load=true, out=pcloopback, out[0..14]=pc);
+
 }

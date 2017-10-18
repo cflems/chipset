@@ -107,7 +107,74 @@ for (let i = 0; i < inputs.length; i++) {
       }
     }
 
+    // a-bit processing
+    let alucmd = leftcmd.substr(leftcmd.indexOf('=')+1).trim().toUpperCase();
+    if (alucmd.indexOf('A') > -1 && alucmd.indexOf('M') > -1)
+      quit('(Line '+(i+1)+'): You can\'t use both A and M in your input to the ALU.');
+    else if (alucmd.indexOf('M') > -1) working[3] = '1';
+    alucmd = alucmd.replace(/A|M/g, 'X').replace(/\s/g, '');
+
     // TODO: process ALU commands
+    switch (alucmd) {
+      case '0':
+        working[4]=working[6]=working[8]='1';
+        break;
+      case '1':
+        working[4]=working[5]=working[6]=working[7]=working[8]=working[9]='1';
+        break;
+      case '-1':
+        working[4]=working[5]=working[6]=working[8]='1';
+        break;
+      case 'D':
+        working[6]=working[7]='1';
+        break;
+      case 'X':
+        working[4]=working[5]='1';
+        break;
+      case '!D':
+        working[6]=working[7]=working[9]='1';
+        break;
+      case '!X':
+        working[4]=working[5]=working[9]='1';
+        break;
+      case '-D':
+        working[6]=working[7]=working[8]=working[9]='1';
+        break;
+      case '-X':
+        working[4]=working[5]=working[8]=working[9]='1';
+        break;
+      case 'D+1':
+        working[5]=working[6]=working[7]=working[8]=working[9]='1';
+        break;
+      case 'X+1':
+        working[4]=working[5]=working[7]=working[8]=working[9]='1';
+        break;
+      case 'D-1':
+        working[6]=working[7]=working[8]='1';
+        break;
+      case 'X-1':
+        working[4]=working[5]=working[8]='1';
+        break;
+      case 'D+X':
+      case 'X+D':
+        working[8]='1';
+        break;
+      case 'D-X':
+        working[5]=working[8]=working[9]='1';
+        break;
+      case 'X-D':
+        working[7]=working[8]=working[9]='1';
+        break;
+      case 'D&X':
+      case 'X&D':
+        break;
+      case 'D|X':
+      case 'X|D':
+        working[5]=working[7]=working[9]='1';
+        break;
+      default:
+        quit('(Line '+(i+1)+'): "'+alucmd+'" is not a valid command to the ALU.');
+    }
  
     // push the line
     outputs.push(working.join('')); 

@@ -14,6 +14,16 @@ function makebinstr (num) {
   return binstr;
 }
 
+function isLabel (ln) {
+  return ln.endsWith(':') || (ln.startsWith('(') && ln.endsWith(')'));
+}
+
+function labelName (ln) {
+  if (!isLabel(ln)) return ln;
+  else if (ln.endsWith(':')) return ln.substr(0, ln.length-1); // label:
+  else return ln.substr(1, ln.length-2); // (label)
+}
+
 if (process.argv.length < 3) {
   console.log('Usage: '+path.basename(process.argv[0])+' '+path.basename(process.argv[1])+' <file.asm>');
   quit('A file input was expected.');
@@ -61,8 +71,8 @@ let outputs = [];
 // input labels to the table
 for (let i = 0, pc = 0; i < inputs.length; i++) {
   if (inputs[i].length < 1) continue;
-  if (inputs[i].endsWith(':') && !inputs[i].startsWith('@')) {
-    let label = inputs[i].substr(0, inputs[i].length-1);
+  if (isLabel(inputs[i]) && !inputs[i].startsWith('@')) {
+    let label = labelName(inputs[i]);
     if (label in symbolT) quit('Redaclaration of label '
                                 +label+' in line '+(i+1)+'.');
     symbolT[label] = pc;
@@ -71,21 +81,23 @@ for (let i = 0, pc = 0; i < inputs.length; i++) {
 
 // instruction processing
 for (let i = 0; i < inputs.length; i++) {
-  if (inputs[i].length < 1) continue; // skip blank lines
+  if (inputs[i].length < 1) continue;
 
   if (inputs[i].startsWith('@')) {
     let varsymbol = inputs[i].substr(1).trim();
     let varidx = parseInt(varsymbol);
     if (isNaN(varidx)) {
-      if (varsymbol in symbolT) outputs.push(makebinstr(symbolT[varsymbol]));
-      else {
+      if (varsymbol in symbolT) {
+        outputs.push(makebinstr(symbolT[varsymbol]));
+      } else {
+        console.log('New variable: '+varsymbol);
         symbolT[varsymbol] = varcounter;
         outputs.push(makebinstr(varcounter++));
       }
     } else outputs.push(makebinstr(varidx));
   } else {
     // label
-    if (inputs[i].endsWith(':')) continue;
+    if (isLabel(inputs[i])) continue;
 
     // c-inst
     let working = ['1','1','1','0','0','0','0','0','0','0','0','0','0','0','0','0'];

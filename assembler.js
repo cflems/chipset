@@ -1,8 +1,18 @@
 const fs = require('fs');
 const path = require('path');
+const colors = require('colors');
 
-function quit (message) {
-  console.error('[Error] '+message);
+function quit (message, usage=false, line=0) {
+  console.log('~'.repeat(80).red.bold);
+  console.error('[Error] '.red.bold
+                +(line ? ('(Line '+line+'): ').yellow : '')
+                +message);
+  if (usage) {
+    console.log('Usage: '.magenta.bold+path.basename(process.argv[0])
+                +' '+path.basename(process.argv[1])
+                +' <file.asm> [output file (optional)]');
+  }
+  console.log('~'.repeat(80).red.bold);
   process.exit(1);
 }
 
@@ -24,16 +34,16 @@ function labelName (ln) {
   else return ln.substr(1, ln.length-2); // (label)
 }
 
-if (process.argv.length < 3) {
-  console.log('Usage: '+path.basename(process.argv[0])+' '+path.basename(process.argv[1])+' <file.asm>');
-  quit('A file input was expected.');
-}
+if (process.argv.length < 3)
+  quit('An input file was expected.', true);
 if (!process.argv[2].endsWith('.asm'))
-  quit('Only .asm files are accepted.');
+  quit('Only .asm files are accepted.', true);
 
-let basefile = process.argv[2].substr(0, process.argv[2].lastIndexOf('.asm')),
+let basefile = process.argv[2].substr(0,
+                                      process.argv[2].lastIndexOf('.asm')),
     infile = basefile + '.asm',
-    outfile = basefile + '.hack';
+    outfile = (process.argv.length < 4) ? 
+              basefile + '.hack' : process.argv[3];
 
 let inputs = fs.readFileSync(infile, 'utf-8')
                .split('\n')
@@ -73,8 +83,8 @@ for (let i = 0, pc = 0; i < inputs.length; i++) {
   if (inputs[i].length < 1) continue;
   if (isLabel(inputs[i]) && !inputs[i].startsWith('@')) {
     let label = labelName(inputs[i]);
-    if (label in symbolT) quit('Redaclaration of label '
-                                +label+' in line '+(i+1)+'.');
+    if (label in symbolT) quit('Redaclaration of label "'+label+'".',
+                               false, i+1);
     symbolT[label] = pc;
   } else pc++;
 }
@@ -90,7 +100,6 @@ for (let i = 0; i < inputs.length; i++) {
       if (varsymbol in symbolT) {
         outputs.push(makebinstr(symbolT[varsymbol]));
       } else {
-        console.log('New variable: '+varsymbol);
         symbolT[varsymbol] = varcounter;
         outputs.push(makebinstr(varcounter++));
       }
@@ -109,41 +118,40 @@ for (let i = 0; i < inputs.length; i++) {
       if (['JGT', 'JGE', 'JNE', 'JMP'].indexOf(jstmt) != -1) working[15] = '1';
       if (working[13] == '0' && working[14] == '0'
           && working[15] == '0' && jstmt.length > 0)
-        quit('Invalid syntax in "'+inputs[i]+'": '
-             +jstmt+' is not a valid jump command.');
+        quit('Invalid syntax: '+jstmt+' is not a valid jump command.',
+             false, i+1);
     }
 
     // jumps are handled. use command before semicolon
     let leftcmd = inputs[i].split(';')[0].trim();
 
-    // TODO: work = commands format: MD=alushit
     // setter commands
     if (leftcmd.indexOf('=') > -1) {
       let assign = leftcmd.substr(0, leftcmd.indexOf('='))
                    .replace(/\s/g, '').toUpperCase();
       if (assign.length > 3)
-        quit('(Line '+(i+1)+'): '
-             +'There are a maximum of 3 things to be assigned.');
+        quit('There are a maximum of 3 things to be assigned.', false, i+1);
       for (let j = 0; j < assign.length; j++) {
         if (['A', 'D', 'M'].indexOf(assign[j]) < 0)
-          quit('(Line '+(i+1)+'): '
-                +'You cannot assign nonexistant register '+assign[j]+'.');
+          quit('You cannot assign nonexistant register '+assign[j]+'.',
+               false, i+1);
         if (assign[j] == 'A' && working[10] == '0') working[10] = '1';
         else if (assign[j] == 'D' && working[11] == '0') working[11] = '1';
         else if (assign[j] == 'M' && working[12] == '0') working[12] = '1';
-        else quit('Duplicate assignment in line '+(i+1)+'.');
+        else quit('Duplicate assignment of '+assign[j]+'.', false, i+1);
       }
     }
 
     // a-bit processing
-    let alucmd = leftcmd.substr(leftcmd.indexOf('=')+1).trim().toUpperCase();
+    let alucmd = leftcmd.substr(leftcmd.indexOf('=')+1)
+                 .trim().toUpperCase();
     if (alucmd.indexOf('A') > -1 && alucmd.indexOf('M') > -1)
-      quit('(Line '+(i+1)+'):'
-            +' You can\'t use both A and M in your input to the ALU.');
+      quit('You can\'t use both A and M in your input to the ALU.',
+           false, i+1);
     else if (alucmd.indexOf('M') > -1) working[3] = '1';
     alucmd = alucmd.replace(/A|M/g, 'X').replace(/\s/g, '');
 
-    // TODO: process ALU commands
+    // process ALU commands
     switch (alucmd) {
       case '0':
         working[4]=working[6]=working[8]='1';
@@ -202,8 +210,7 @@ for (let i = 0; i < inputs.length; i++) {
         working[5]=working[7]=working[9]='1';
         break;
       default:
-        quit('(Line '+(i+1)+'): "'
-             +alucmd+'" is not a valid command to the ALU.');
+        quit('"'+alucmd+'" is not a valid command to the ALU.', false, i+1);
     }
 
     // push the line

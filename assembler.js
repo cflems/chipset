@@ -133,7 +133,7 @@ for (let i = 0; i < inputs.length; i++) {
         quit('There are a maximum of 3 things to be assigned.', false, i+1);
       for (let j = 0; j < assign.length; j++) {
         if (['A', 'D', 'M'].indexOf(assign[j]) < 0)
-          quit('You cannot assign nonexistant register '+assign[j]+'.',
+          quit('You cannot assign nonexistent register '+assign[j]+'.',
                false, i+1);
         if (assign[j] == 'A' && working[10] == '0') working[10] = '1';
         else if (assign[j] == 'D' && working[11] == '0') working[11] = '1';
